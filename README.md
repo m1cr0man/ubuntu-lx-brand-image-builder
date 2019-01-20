@@ -1,5 +1,7 @@
 # Ubuntu lx-brand Image Builder
 
+[![Build Status](http://ci.m1cr0man.com/badge/3)](http://ci.m1cr0man.com/repo/3)
+
 This is a collection of scripts used for creating an lx-brand Ubuntu image.
 
 ## Requirements
