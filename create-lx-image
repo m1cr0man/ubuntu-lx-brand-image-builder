@@ -154,6 +154,16 @@ zpath="/$BASE_DATASET/$IUUID"
 zroot="/$BASE_DATASET/$IUUID/root"
 
 create_dataset() {
+  if [ -n "$(zfs list | grep $zname)" ]; then
+    echo "==> Removing old dataset..."
+    zfs destroy -R $zname
+  fi
+
+  if [ -e $zpath ]; then
+    echo "==> Removing old dataset contents..."
+    rm -rf $zpath
+  fi
+
   echo "==> Creating dataset for image creation..."
   zfs create $BASE_DATASET/$IUUID
   chmod 700 $zpath
