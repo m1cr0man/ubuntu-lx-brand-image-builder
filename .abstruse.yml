@@ -1,0 +1,27 @@
+---
+image: basic_builder
+matrix:
+  - env: BUILDPATH=/home/abstruse/ubuntu
+script:
+  - mkdir build
+  - 'sudo ./install -r cosmic -a amd64 -d $(pwd)/build -m http://archive.ubuntu.com/ubuntu/ -i ubuntu-18.10 -p "Ubuntu 18.10 Cosmic M1" -D "Ubuntu 18.10 Cosmic Cuttlefish M1cr0man 64-bit lx-brand image."'
+after_success:
+  - mc mb -p m1s3/artifacts
+  - mc mb -p m1s3/artifacts/zones/
+  - mc cp *.tar.gz m1s3/artifacts/zones/
+  - echo *.tar.gz | mc pipe m1s3/artifacts/zones/ubuntu-latest-build.txt
+before_deploy:
+  - mkdir -p ~/.ssh
+  - echo $SSH_KEY_BUILDER | base64 -d > ~/.ssh/id_ed25519
+  - chmod 400 ~/.ssh/id_ed25519
+  - mc cat m1s3/artifacts/zones/ubuntu-latest-build.txt
+  - mc cp m1s3/artifacts/zones/$(mc cat m1s3/artifacts/zones/ubuntu-latest-build.txt) .
+deploy:
+  - export SMARTOS_BUILDER=10.0.0.100
+  - ssh-keyscan $SMARTOS_BUILDER > ~/.ssh/known_hosts
+  - rsync -vaH *.tar.gz create-lx-image create-manifest create.sh root@$SMARTOS_BUILDER:./
+  - ssh root@$SMARTOS_BUILDER ./create.sh
+  - rsync --remove-source-files -vaH root@$SMARTOS_BUILDER:*{.zfs.gz,.json} .
+after_deploy:
+  - mc cp *.zfs.gz *.json m1s3/artifacts/zones/
+  - date +%Y%m%d | mc pipe m1s3/artifacts/zones/ubuntu-latest.txt
