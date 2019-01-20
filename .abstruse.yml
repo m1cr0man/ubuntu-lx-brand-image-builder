@@ -3,6 +3,8 @@ image: basic_builder
 matrix:
   - env: BUILDPATH=/home/abstruse/ubuntu
 script:
+  - sudo apt-get update
+  - sudo apt-get install -y debootstrap
   - mkdir build
   - 'sudo ./install -r cosmic -a amd64 -d $(pwd)/build -m http://archive.ubuntu.com/ubuntu/ -i ubuntu-18.10 -p "Ubuntu 18.10 Cosmic M1" -D "Ubuntu 18.10 Cosmic Cuttlefish M1cr0man 64-bit lx-brand image."'
 after_success:
